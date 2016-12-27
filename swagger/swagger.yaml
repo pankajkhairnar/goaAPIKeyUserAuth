@@ -1,0 +1,166 @@
+consumes:
+- application/json
+- application/xml
+- application/gob
+- application/x-gob
+definitions:
+  Goaapikeyuserauth:
+    description: The common media type to all request responses for user service (default
+      view)
+    example:
+      code: Autem omnis est ex sed recusandae.
+      data:
+        UserName: Eos consequatur.
+        userId: 4.2628808e+18
+      message: Sed sed nisi ex.
+      status: 8.5875014e+18
+    properties:
+      code:
+        description: Response code
+        example: Autem omnis est ex sed recusandae.
+        type: string
+      data:
+        $ref: '#/definitions/UserPayload'
+      message:
+        description: Response Message
+        example: Sed sed nisi ex.
+        type: string
+      status:
+        description: Error Code
+        example: 8.5875014e+18
+        format: int64
+        type: integer
+    required:
+    - code
+    - message
+    - status
+    - data
+    title: 'Mediatype identifier: application/vnd.goaapikeyuserauth'
+    type: object
+  UserPayload:
+    example:
+      UserName: Eos consequatur.
+      userId: 4.2628808e+18
+    properties:
+      UserName:
+        description: University Name
+        example: Eos consequatur.
+        type: string
+      userId:
+        description: University Id
+        example: 4.2628808e+18
+        format: int64
+        type: integer
+    required:
+    - userId
+    - UserName
+    title: UserPayload
+    type: object
+info:
+  version: ""
+paths:
+  /user/info/{id}:
+    get:
+      description: This action is secure with the api_key scheme
+      operationId: user#info
+      parameters:
+      - description: UserId
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Goaapikeyuserauth'
+        "401":
+          description: Unauthorized
+      security:
+      - api_key: []
+      summary: info user
+      tags:
+      - user
+  /user/login:
+    post:
+      description: This action does not require auth
+      operationId: user#login
+      parameters:
+      - description: Email ID of user
+        in: query
+        name: email
+        required: false
+        type: string
+      - description: Password
+        in: query
+        name: password
+        required: false
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Goaapikeyuserauth'
+      summary: login user
+      tags:
+      - user
+  /user/register:
+    post:
+      description: This endpoint will be used to register a user
+      operationId: user#register
+      parameters:
+      - description: Email of user
+        in: query
+        maxLength: 50
+        minLength: 5
+        name: email
+        required: false
+        type: string
+      - description: Name of user
+        in: query
+        maxLength: 50
+        minLength: 2
+        name: name
+        pattern: ^[ a-zA-Z]+$
+        required: false
+        type: string
+      - description: Password
+        in: query
+        maxLength: 20
+        minLength: 5
+        name: password
+        required: false
+        type: string
+      - description: Password
+        in: query
+        maxLength: 20
+        minLength: 5
+        name: re_password
+        required: false
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Goaapikeyuserauth'
+      summary: register user
+      tags:
+      - user
+produces:
+- application/json
+- application/xml
+- application/gob
+- application/x-gob
+responses:
+  OK:
+    description: OK
+    schema:
+      $ref: '#/definitions/Goaapikeyuserauth'
+  Unauthorized:
+    description: Unauthorized
+securityDefinitions:
+  api_key:
+    in: header
+    name: secret-key
+    type: apiKey
+swagger: "2.0"
