@@ -2,16 +2,25 @@ package main
 
 import (
 	"goaAPIKeyUserAuth/app"
-	"log"
 	"net/http"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/goadesign/goa"
+	"github.com/jinzhu/gorm"
 	"golang.org/x/net/context"
 )
 
 // UserController implements the user resource.
 type UserController struct {
 	*goa.Controller
+}
+
+// User : strut for user model
+type User struct {
+	gorm.Model
+	Name     string
+	Email    string
+	Password string
 }
 
 // NewAPIKeyMiddleware creates a middleware that checks for the presence of an authorization header
@@ -45,8 +54,24 @@ func NewUserController(service *goa.Service) *UserController {
 
 // Info runs the info action.
 func (c *UserController) Info(ctx *app.InfoUserContext) error {
-	log.Println("user id", ctx.ID)
-	res := &app.Goaapikeyuserauth{}
+	var user User
+	var userPayload *app.UserPayload
+
+	user.ID = uint(ctx.ID)
+	db.First(&user)
+
+	userPayload = &app.UserPayload{
+		UserID:   ctx.ID,
+		UserName: user.Name,
+	}
+
+	res := &app.Goaapikeyuserauth{
+		Code:    "success",
+		Status:  200,
+		Message: "",
+		Data:    userPayload,
+	}
+
 	return ctx.OK(res)
 }
 

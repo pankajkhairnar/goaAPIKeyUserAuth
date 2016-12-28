@@ -7,12 +7,15 @@ import (
 
 	"github.com/goadesign/goa"
 	"github.com/goadesign/goa/middleware"
+	"github.com/jinzhu/gorm"
 )
 
 var (
 	// ErrUnauthorized is the error returned for unauthorized requests.
 	ErrUnauthorized = goa.NewErrorClass("unauthorized", 401)
 )
+
+var db *gorm.DB
 
 func main() {
 	// Create service
@@ -31,8 +34,9 @@ func main() {
 	c := NewUserController(service)
 	app.MountUserController(service, c)
 
+	db, _ = gorm.Open("mysql", "root:password@/goaAPIKeyUserAuth")
 	// Start service
 	if err := service.ListenAndServe(":8080"); err != nil {
-		service.LogError("startup", "err", err)
+		service.LogError("service startup", "err", err)
 	}
 }

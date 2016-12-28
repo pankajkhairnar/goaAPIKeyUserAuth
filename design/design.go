@@ -70,8 +70,8 @@ var _ = Resource("user", func() {
 // UserType : contain information of user
 var UserType = Type("UserPayload", func() {
 	Description("")
-	Attribute("userId", Integer, "University Id")
-	Attribute("UserName", String, "University Name")
+	Attribute("UserId", Integer, "User Id")
+	Attribute("UserName", String, "User Name")
 	Required("userId", "UserName")
 })
 
