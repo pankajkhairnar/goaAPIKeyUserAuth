@@ -4,30 +4,115 @@ consumes:
 - application/gob
 - application/x-gob
 definitions:
-  Goaapikeyuserauth:
-    description: The common media type to all request responses for user service (default
-      view)
+  Loginresponse:
+    description: After login response (default view)
     example:
       code: Autem omnis est ex sed recusandae.
-      data:
-        UserName: Eos consequatur.
-        userId: 4.2628808e+18
-      message: Sed sed nisi ex.
-      status: 8.5875014e+18
+      message: Eos consequatur.
+      secret_key: Deleniti sed.
+      status: 3.4631598e+18
     properties:
       code:
         description: Response code
         example: Autem omnis est ex sed recusandae.
         type: string
+      message:
+        description: Response Message
+        example: Eos consequatur.
+        type: string
+      secret_key:
+        description: Secret key
+        example: Deleniti sed.
+        type: string
+      status:
+        description: Error Code
+        example: 3.4631598e+18
+        format: int64
+        type: integer
+    required:
+    - code
+    - message
+    - status
+    - secret_key
+    title: 'Mediatype identifier: application/vnd.loginresponse'
+    type: object
+  UserPayload:
+    description: User data payload
+    example:
+      UserEmail: Alias quia est minima vel possimus.
+      UserId: 5.4907137e+18
+      UserName: Neque delectus.
+    properties:
+      UserEmail:
+        description: User Email
+        example: Alias quia est minima vel possimus.
+        type: string
+      UserId:
+        description: User Id
+        example: 5.4907137e+18
+        format: int64
+        type: integer
+      UserName:
+        description: User Name
+        example: Neque delectus.
+        type: string
+    required:
+    - UserId
+    - UserName
+    - UserEmail
+    title: UserPayload
+    type: object
+  Usercommonresponse:
+    description: This will be a common response for most the user end points (default
+      view)
+    example:
+      code: Ex velit amet eius tempora iusto.
+      message: Occaecati numquam velit et explicabo id.
+      status: 4.0464612e+18
+    properties:
+      code:
+        description: Response code
+        example: Ex velit amet eius tempora iusto.
+        type: string
+      message:
+        description: Response Message
+        example: Occaecati numquam velit et explicabo id.
+        type: string
+      status:
+        description: Error Code
+        example: 4.0464612e+18
+        format: int64
+        type: integer
+    required:
+    - code
+    - message
+    - status
+    title: 'Mediatype identifier: application/vnd.usercommonresponse'
+    type: object
+  Userdataresponse:
+    description: This will be response when user/info endpoint called (default view)
+    example:
+      code: Dignissimos corrupti similique voluptatibus.
+      data:
+        UserEmail: Alias quia est minima vel possimus.
+        UserId: 5.4907137e+18
+        UserName: Neque delectus.
+      message: Libero nesciunt veniam reiciendis aut dolore ipsum.
+      status: 7.787198e+18
+    properties:
+      code:
+        description: Response code
+        example: Dignissimos corrupti similique voluptatibus.
+        type: string
       data:
         $ref: '#/definitions/UserPayload'
       message:
         description: Response Message
-        example: Sed sed nisi ex.
+        example: Libero nesciunt veniam reiciendis aut dolore ipsum.
         type: string
       status:
         description: Error Code
-        example: 8.5875014e+18
+        example: 7.787198e+18
         format: int64
         type: integer
     required:
@@ -35,45 +120,20 @@ definitions:
     - message
     - status
     - data
-    title: 'Mediatype identifier: application/vnd.goaapikeyuserauth'
-    type: object
-  UserPayload:
-    example:
-      UserName: Eos consequatur.
-      userId: 4.2628808e+18
-    properties:
-      UserName:
-        description: University Name
-        example: Eos consequatur.
-        type: string
-      userId:
-        description: University Id
-        example: 4.2628808e+18
-        format: int64
-        type: integer
-    required:
-    - userId
-    - UserName
-    title: UserPayload
+    title: 'Mediatype identifier: application/vnd.userdataresponse'
     type: object
 info:
   version: ""
 paths:
-  /user/info/{id}:
+  /user/info:
     get:
       description: This action is secure with the api_key scheme
       operationId: user#info
-      parameters:
-      - description: UserId
-        in: path
-        name: id
-        required: true
-        type: integer
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/Goaapikeyuserauth'
+            $ref: '#/definitions/Userdataresponse'
         "401":
           description: Unauthorized
       security:
@@ -100,8 +160,26 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/Goaapikeyuserauth'
+            $ref: '#/definitions/Loginresponse'
+        "401":
+          description: Unauthorized
       summary: login user
+      tags:
+      - user
+  /user/logout:
+    get:
+      description: This action is secure with the api_key scheme
+      operationId: user#logout
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Usercommonresponse'
+        "401":
+          description: Unauthorized
+      security:
+      - api_key: []
+      summary: logout user
       tags:
       - user
   /user/register:
@@ -142,7 +220,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/Goaapikeyuserauth'
+            $ref: '#/definitions/Usercommonresponse'
       summary: register user
       tags:
       - user
@@ -155,7 +233,7 @@ responses:
   OK:
     description: OK
     schema:
-      $ref: '#/definitions/Goaapikeyuserauth'
+      $ref: '#/definitions/Usercommonresponse'
   Unauthorized:
     description: Unauthorized
 securityDefinitions:

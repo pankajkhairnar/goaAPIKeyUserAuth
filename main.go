@@ -37,6 +37,6 @@ func main() {
 	db, _ = gorm.Open("mysql", "root:password@/goaAPIKeyUserAuth")
 	// Start service
 	if err := service.ListenAndServe(":8080"); err != nil {
-		service.LogError("service startup", "err", err)
+		service.LogError("startup", "err", err)
 	}
 }

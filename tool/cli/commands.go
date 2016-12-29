@@ -2,7 +2,6 @@ package cli
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/goadesign/goa"
 	goaclient "github.com/goadesign/goa/client"
 	uuid "github.com/goadesign/goa/uuid"
@@ -19,8 +18,6 @@ import (
 type (
 	// InfoUserCommand is the command line data structure for the info action of user
 	InfoUserCommand struct {
-		// UserId
-		ID          int
 		PrettyPrint bool
 	}
 
@@ -30,6 +27,11 @@ type (
 		Email string
 		// Password
 		Password    string
+		PrettyPrint bool
+	}
+
+	// LogoutUserCommand is the command line data structure for the logout action of user
+	LogoutUserCommand struct {
 		PrettyPrint bool
 	}
 
@@ -56,7 +58,7 @@ func RegisterCommands(app *cobra.Command, c *client.Client) {
 	}
 	tmp1 := new(InfoUserCommand)
 	sub = &cobra.Command{
-		Use:   `user ["/user/info/ID"]`,
+		Use:   `user ["/user/info"]`,
 		Short: `This resource uses an API key to secure its endpoints`,
 		RunE:  func(cmd *cobra.Command, args []string) error { return tmp1.Run(c, args) },
 	}
@@ -79,17 +81,31 @@ func RegisterCommands(app *cobra.Command, c *client.Client) {
 	command.AddCommand(sub)
 	app.AddCommand(command)
 	command = &cobra.Command{
-		Use:   "register",
-		Short: `This endpoint will be used to register a user`,
+		Use:   "logout",
+		Short: `This action is secure with the api_key scheme`,
 	}
-	tmp3 := new(RegisterUserCommand)
+	tmp3 := new(LogoutUserCommand)
 	sub = &cobra.Command{
-		Use:   `user ["/user/register"]`,
+		Use:   `user ["/user/logout"]`,
 		Short: `This resource uses an API key to secure its endpoints`,
 		RunE:  func(cmd *cobra.Command, args []string) error { return tmp3.Run(c, args) },
 	}
 	tmp3.RegisterFlags(sub, c)
 	sub.PersistentFlags().BoolVar(&tmp3.PrettyPrint, "pp", false, "Pretty print response body")
+	command.AddCommand(sub)
+	app.AddCommand(command)
+	command = &cobra.Command{
+		Use:   "register",
+		Short: `This endpoint will be used to register a user`,
+	}
+	tmp4 := new(RegisterUserCommand)
+	sub = &cobra.Command{
+		Use:   `user ["/user/register"]`,
+		Short: `This resource uses an API key to secure its endpoints`,
+		RunE:  func(cmd *cobra.Command, args []string) error { return tmp4.Run(c, args) },
+	}
+	tmp4.RegisterFlags(sub, c)
+	sub.PersistentFlags().BoolVar(&tmp4.PrettyPrint, "pp", false, "Pretty print response body")
 	command.AddCommand(sub)
 	app.AddCommand(command)
 }
@@ -253,7 +269,7 @@ func (cmd *InfoUserCommand) Run(c *client.Client, args []string) error {
 	if len(args) > 0 {
 		path = args[0]
 	} else {
-		path = fmt.Sprintf("/user/info/%v", cmd.ID)
+		path = "/user/info"
 	}
 	logger := goa.NewLogger(log.New(os.Stderr, "", log.LstdFlags))
 	ctx := goa.WithLogger(context.Background(), logger)
@@ -269,8 +285,6 @@ func (cmd *InfoUserCommand) Run(c *client.Client, args []string) error {
 
 // RegisterFlags registers the command flags with the command line.
 func (cmd *InfoUserCommand) RegisterFlags(cc *cobra.Command, c *client.Client) {
-	var id int
-	cc.Flags().IntVar(&cmd.ID, "id", id, `UserId`)
 }
 
 // Run makes the HTTP request corresponding to the LoginUserCommand command.
@@ -299,6 +313,30 @@ func (cmd *LoginUserCommand) RegisterFlags(cc *cobra.Command, c *client.Client) 
 	cc.Flags().StringVar(&cmd.Email, "email", email, `Email ID of user`)
 	var password string
 	cc.Flags().StringVar(&cmd.Password, "password", password, `Password`)
+}
+
+// Run makes the HTTP request corresponding to the LogoutUserCommand command.
+func (cmd *LogoutUserCommand) Run(c *client.Client, args []string) error {
+	var path string
+	if len(args) > 0 {
+		path = args[0]
+	} else {
+		path = "/user/logout"
+	}
+	logger := goa.NewLogger(log.New(os.Stderr, "", log.LstdFlags))
+	ctx := goa.WithLogger(context.Background(), logger)
+	resp, err := c.LogoutUser(ctx, path)
+	if err != nil {
+		goa.LogError(ctx, "failed", "err", err)
+		return err
+	}
+
+	goaclient.HandleResponse(c.Client, resp, cmd.PrettyPrint)
+	return nil
+}
+
+// RegisterFlags registers the command flags with the command line.
+func (cmd *LogoutUserCommand) RegisterFlags(cc *cobra.Command, c *client.Client) {
 }
 
 // Run makes the HTTP request corresponding to the RegisterUserCommand command.

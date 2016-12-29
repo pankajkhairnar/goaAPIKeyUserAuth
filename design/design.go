@@ -13,7 +13,7 @@ var APIKey = APIKeySecurity("api_key", func() {
 
 var _ = Resource("user", func() {
 	Description("This resource uses an API key to secure its endpoints")
-	DefaultMedia(UserResponseMedia)
+	DefaultMedia(UserCommonResponseMedia)
 	Security(APIKey)
 
 	Action("register", func() {
@@ -42,7 +42,7 @@ var _ = Resource("user", func() {
 			})
 		})
 		NoSecurity()
-		Response(OK)
+		Response(OK, UserCommonResponseMedia)
 	})
 
 	Action("login", func() {
@@ -53,15 +53,20 @@ var _ = Resource("user", func() {
 			Param("password", String, "Password")
 		})
 		NoSecurity()
-		Response(OK)
+		Response(OK, UserLoginResponseMedia)
+		Response(Unauthorized)
 	})
 
 	Action("info", func() {
 		Description("This action is secure with the api_key scheme")
-		Routing(GET("/user/info/:id"))
-		Params(func() {
-			Param("id", Integer, "UserId")
-		})
+		Routing(GET("/user/info"))
+		Response(OK, UserDataResponse)
+		Response(Unauthorized)
+	})
+
+	Action("logout", func() {
+		Description("This action is secure with the api_key scheme")
+		Routing(GET("/user/logout"))
 		Response(OK)
 		Response(Unauthorized)
 	})
@@ -69,15 +74,16 @@ var _ = Resource("user", func() {
 
 // UserType : contain information of user
 var UserType = Type("UserPayload", func() {
-	Description("")
+	Description("User data payload")
 	Attribute("UserId", Integer, "User Id")
 	Attribute("UserName", String, "User Name")
-	Required("userId", "UserName")
+	Attribute("UserEmail", String, "User Email")
+	Required("UserId", "UserName", "UserEmail")
 })
 
-//UserResponseMedia : this will be response skeleton for each user api endpoints
-var UserResponseMedia = MediaType("application/vnd.goaAPIKeyUserAuth", func() {
-	Description("The common media type to all request responses for user service")
+//UserDataResponse : this will be output for user info api call
+var UserDataResponse = MediaType("application/vnd.userDataResponse", func() {
+	Description("This will be response when user/info endpoint called")
 	Attributes(func() {
 		Attribute("code", String, "Response code")
 		Attribute("message", String, "Response Message")
@@ -110,5 +116,22 @@ var UserLoginResponseMedia = MediaType("application/vnd.loginResponse", func() {
 		Attribute("message")
 		Attribute("status")
 		Attribute("secret_key")
+	})
+})
+
+// UserCommonResponseMedia : This will be a common response for most the user end points
+var UserCommonResponseMedia = MediaType("application/vnd.userCommonResponse", func() {
+	Description("This will be a common response for most the user end points")
+	Attributes(func() {
+		Attribute("code", String, "Response code")
+		Attribute("message", String, "Response Message")
+		Attribute("status", Integer, "Error Code")
+		Required("code", "message", "status")
+	})
+
+	View("default", func() {
+		Attribute("code")
+		Attribute("message")
+		Attribute("status")
 	})
 })

@@ -15,7 +15,6 @@ package app
 import (
 	"github.com/goadesign/goa"
 	"golang.org/x/net/context"
-	"strconv"
 	"unicode/utf8"
 )
 
@@ -24,7 +23,6 @@ type InfoUserContext struct {
 	context.Context
 	*goa.ResponseData
 	*goa.RequestData
-	ID int
 }
 
 // NewInfoUserContext parses the incoming request URL and body, performs validations and creates the
@@ -35,21 +33,12 @@ func NewInfoUserContext(ctx context.Context, service *goa.Service) (*InfoUserCon
 	resp.Service = service
 	req := goa.ContextRequest(ctx)
 	rctx := InfoUserContext{Context: ctx, ResponseData: resp, RequestData: req}
-	paramID := req.Params["id"]
-	if len(paramID) > 0 {
-		rawID := paramID[0]
-		if id, err2 := strconv.Atoi(rawID); err2 == nil {
-			rctx.ID = id
-		} else {
-			err = goa.MergeErrors(err, goa.InvalidParamTypeError("id", rawID, "integer"))
-		}
-	}
 	return &rctx, err
 }
 
 // OK sends a HTTP response with status code 200.
-func (ctx *InfoUserContext) OK(r *Goaapikeyuserauth) error {
-	ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goaapikeyuserauth")
+func (ctx *InfoUserContext) OK(r *Userdataresponse) error {
+	ctx.ResponseData.Header().Set("Content-Type", "application/vnd.userdataresponse")
 	return ctx.ResponseData.Service.Send(ctx.Context, 200, r)
 }
 
@@ -90,9 +79,45 @@ func NewLoginUserContext(ctx context.Context, service *goa.Service) (*LoginUserC
 }
 
 // OK sends a HTTP response with status code 200.
-func (ctx *LoginUserContext) OK(r *Goaapikeyuserauth) error {
-	ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goaapikeyuserauth")
+func (ctx *LoginUserContext) OK(r *Loginresponse) error {
+	ctx.ResponseData.Header().Set("Content-Type", "application/vnd.loginresponse")
 	return ctx.ResponseData.Service.Send(ctx.Context, 200, r)
+}
+
+// Unauthorized sends a HTTP response with status code 401.
+func (ctx *LoginUserContext) Unauthorized() error {
+	ctx.ResponseData.WriteHeader(401)
+	return nil
+}
+
+// LogoutUserContext provides the user logout action context.
+type LogoutUserContext struct {
+	context.Context
+	*goa.ResponseData
+	*goa.RequestData
+}
+
+// NewLogoutUserContext parses the incoming request URL and body, performs validations and creates the
+// context used by the user controller logout action.
+func NewLogoutUserContext(ctx context.Context, service *goa.Service) (*LogoutUserContext, error) {
+	var err error
+	resp := goa.ContextResponse(ctx)
+	resp.Service = service
+	req := goa.ContextRequest(ctx)
+	rctx := LogoutUserContext{Context: ctx, ResponseData: resp, RequestData: req}
+	return &rctx, err
+}
+
+// OK sends a HTTP response with status code 200.
+func (ctx *LogoutUserContext) OK(r *Usercommonresponse) error {
+	ctx.ResponseData.Header().Set("Content-Type", "application/vnd.usercommonresponse")
+	return ctx.ResponseData.Service.Send(ctx.Context, 200, r)
+}
+
+// Unauthorized sends a HTTP response with status code 401.
+func (ctx *LogoutUserContext) Unauthorized() error {
+	ctx.ResponseData.WriteHeader(401)
+	return nil
 }
 
 // RegisterUserContext provides the user register action context.
@@ -183,7 +208,7 @@ func NewRegisterUserContext(ctx context.Context, service *goa.Service) (*Registe
 }
 
 // OK sends a HTTP response with status code 200.
-func (ctx *RegisterUserContext) OK(r *Goaapikeyuserauth) error {
-	ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goaapikeyuserauth")
+func (ctx *RegisterUserContext) OK(r *Usercommonresponse) error {
+	ctx.ResponseData.Header().Set("Content-Type", "application/vnd.usercommonresponse")
 	return ctx.ResponseData.Service.Send(ctx.Context, 200, r)
 }

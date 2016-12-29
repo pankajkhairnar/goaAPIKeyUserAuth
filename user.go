@@ -56,20 +56,29 @@ func NewUserController(service *goa.Service) *UserController {
 func (c *UserController) Info(ctx *app.InfoUserContext) error {
 	var user User
 	var userPayload *app.UserPayload
+	res := &app.Userdataresponse{}
+	userID := 1 //@todo:  Temporary value, take this value from session
 
-	user.ID = uint(ctx.ID)
-	db.First(&user)
-
-	userPayload = &app.UserPayload{
-		UserID:   ctx.ID,
-		UserName: user.Name,
-	}
-
-	res := &app.Goaapikeyuserauth{
-		Code:    "success",
-		Status:  200,
-		Message: "",
-		Data:    userPayload,
+	if db.Where("id = ?", userID).First(&user).RecordNotFound() == true {
+		// userPayload = &app.UserPayload{}
+		res = &app.Userdataresponse{
+			Code:    "failure",
+			Status:  404,
+			Message: "Not found",
+			Data:    userPayload,
+		}
+	} else {
+		userPayload = &app.UserPayload{
+			UserID:    int(user.ID),
+			UserName:  user.Name,
+			UserEmail: user.Email,
+		}
+		res = &app.Userdataresponse{
+			Code:    "success",
+			Status:  200,
+			Message: "",
+			Data:    userPayload,
+		}
 	}
 
 	return ctx.OK(res)
@@ -77,13 +86,33 @@ func (c *UserController) Info(ctx *app.InfoUserContext) error {
 
 // Login runs the login action.
 func (c *UserController) Login(ctx *app.LoginUserContext) error {
-	res := &app.Goaapikeyuserauth{}
+	// UserController_Login: start_implement
+
+	// Put your logic here
+
+	// UserController_Login: end_implement
+	res := &app.Loginresponse{}
+	return ctx.OK(res)
+}
+
+// Logout runs the logout action.
+func (c *UserController) Logout(ctx *app.LogoutUserContext) error {
+	// UserController_Logout: start_implement
+
+	// Put your logic here
+
+	// UserController_Logout: end_implement
+	res := &app.Usercommonresponse{}
 	return ctx.OK(res)
 }
 
 // Register runs the register action.
 func (c *UserController) Register(ctx *app.RegisterUserContext) error {
+	// UserController_Register: start_implement
 
-	res := &app.Goaapikeyuserauth{}
+	// Put your logic here
+
+	// UserController_Register: end_implement
+	res := &app.Usercommonresponse{}
 	return ctx.OK(res)
 }

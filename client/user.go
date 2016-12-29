@@ -8,8 +8,8 @@ import (
 )
 
 // InfoUserPath computes a request path to the info action of user.
-func InfoUserPath(id int) string {
-	return fmt.Sprintf("/user/info/%v", id)
+func InfoUserPath() string {
+	return fmt.Sprintf("/user/info")
 }
 
 // This action is secure with the api_key scheme
@@ -70,6 +70,37 @@ func (c *Client) NewLoginUserRequest(ctx context.Context, path string, email *st
 	req, err := http.NewRequest("POST", u.String(), nil)
 	if err != nil {
 		return nil, err
+	}
+	return req, nil
+}
+
+// LogoutUserPath computes a request path to the logout action of user.
+func LogoutUserPath() string {
+	return fmt.Sprintf("/user/logout")
+}
+
+// This action is secure with the api_key scheme
+func (c *Client) LogoutUser(ctx context.Context, path string) (*http.Response, error) {
+	req, err := c.NewLogoutUserRequest(ctx, path)
+	if err != nil {
+		return nil, err
+	}
+	return c.Client.Do(ctx, req)
+}
+
+// NewLogoutUserRequest create the request corresponding to the logout action endpoint of the user resource.
+func (c *Client) NewLogoutUserRequest(ctx context.Context, path string) (*http.Request, error) {
+	scheme := c.Scheme
+	if scheme == "" {
+		scheme = "http"
+	}
+	u := url.URL{Host: c.Host, Scheme: scheme, Path: path}
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	if c.APIKeySigner != nil {
+		c.APIKeySigner.Sign(req)
 	}
 	return req, nil
 }

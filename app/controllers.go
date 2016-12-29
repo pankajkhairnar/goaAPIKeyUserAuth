@@ -38,6 +38,7 @@ type UserController interface {
 	goa.Muxer
 	Info(*InfoUserContext) error
 	Login(*LoginUserContext) error
+	Logout(*LogoutUserContext) error
 	Register(*RegisterUserContext) error
 }
 
@@ -59,8 +60,8 @@ func MountUserController(service *goa.Service, ctrl UserController) {
 		return ctrl.Info(rctx)
 	}
 	h = handleSecurity("api_key", h)
-	service.Mux.Handle("GET", "/user/info/:id", ctrl.MuxHandler("Info", h, nil))
-	service.LogInfo("mount", "ctrl", "User", "action", "Info", "route", "GET /user/info/:id", "security", "api_key")
+	service.Mux.Handle("GET", "/user/info", ctrl.MuxHandler("Info", h, nil))
+	service.LogInfo("mount", "ctrl", "User", "action", "Info", "route", "GET /user/info", "security", "api_key")
 
 	h = func(ctx context.Context, rw http.ResponseWriter, req *http.Request) error {
 		// Check if there was an error loading the request
@@ -76,6 +77,22 @@ func MountUserController(service *goa.Service, ctrl UserController) {
 	}
 	service.Mux.Handle("POST", "/user/login", ctrl.MuxHandler("Login", h, nil))
 	service.LogInfo("mount", "ctrl", "User", "action", "Login", "route", "POST /user/login")
+
+	h = func(ctx context.Context, rw http.ResponseWriter, req *http.Request) error {
+		// Check if there was an error loading the request
+		if err := goa.ContextError(ctx); err != nil {
+			return err
+		}
+		// Build the context
+		rctx, err := NewLogoutUserContext(ctx, service)
+		if err != nil {
+			return err
+		}
+		return ctrl.Logout(rctx)
+	}
+	h = handleSecurity("api_key", h)
+	service.Mux.Handle("GET", "/user/logout", ctrl.MuxHandler("Logout", h, nil))
+	service.LogInfo("mount", "ctrl", "User", "action", "Logout", "route", "GET /user/logout", "security", "api_key")
 
 	h = func(ctx context.Context, rw http.ResponseWriter, req *http.Request) error {
 		// Check if there was an error loading the request

@@ -14,40 +14,6 @@ package app
 
 import "github.com/goadesign/goa"
 
-// The common media type to all request responses for user service (default view)
-//
-// Identifier: application/vnd.goaapikeyuserauth; view=default
-type Goaapikeyuserauth struct {
-	// Response code
-	Code string `form:"code" json:"code" xml:"code"`
-	// User Info
-	Data *UserPayload `form:"data" json:"data" xml:"data"`
-	// Response Message
-	Message string `form:"message" json:"message" xml:"message"`
-	// Error Code
-	Status int `form:"status" json:"status" xml:"status"`
-}
-
-// Validate validates the Goaapikeyuserauth media type instance.
-func (mt *Goaapikeyuserauth) Validate() (err error) {
-	if mt.Code == "" {
-		err = goa.MergeErrors(err, goa.MissingAttributeError(`response`, "code"))
-	}
-	if mt.Message == "" {
-		err = goa.MergeErrors(err, goa.MissingAttributeError(`response`, "message"))
-	}
-
-	if mt.Data == nil {
-		err = goa.MergeErrors(err, goa.MissingAttributeError(`response`, "data"))
-	}
-	if mt.Data != nil {
-		if err2 := mt.Data.Validate(); err2 != nil {
-			err = goa.MergeErrors(err, err2)
-		}
-	}
-	return
-}
-
 // After login response (default view)
 //
 // Identifier: application/vnd.loginresponse; view=default
@@ -73,6 +39,64 @@ func (mt *Loginresponse) Validate() (err error) {
 
 	if mt.SecretKey == "" {
 		err = goa.MergeErrors(err, goa.MissingAttributeError(`response`, "secret_key"))
+	}
+	return
+}
+
+// This will be a common response for most the user end points (default view)
+//
+// Identifier: application/vnd.usercommonresponse; view=default
+type Usercommonresponse struct {
+	// Response code
+	Code string `form:"code" json:"code" xml:"code"`
+	// Response Message
+	Message string `form:"message" json:"message" xml:"message"`
+	// Error Code
+	Status int `form:"status" json:"status" xml:"status"`
+}
+
+// Validate validates the Usercommonresponse media type instance.
+func (mt *Usercommonresponse) Validate() (err error) {
+	if mt.Code == "" {
+		err = goa.MergeErrors(err, goa.MissingAttributeError(`response`, "code"))
+	}
+	if mt.Message == "" {
+		err = goa.MergeErrors(err, goa.MissingAttributeError(`response`, "message"))
+	}
+
+	return
+}
+
+// This will be response when user/info endpoint called (default view)
+//
+// Identifier: application/vnd.userdataresponse; view=default
+type Userdataresponse struct {
+	// Response code
+	Code string `form:"code" json:"code" xml:"code"`
+	// User Info
+	Data *UserPayload `form:"data" json:"data" xml:"data"`
+	// Response Message
+	Message string `form:"message" json:"message" xml:"message"`
+	// Error Code
+	Status int `form:"status" json:"status" xml:"status"`
+}
+
+// Validate validates the Userdataresponse media type instance.
+func (mt *Userdataresponse) Validate() (err error) {
+	if mt.Code == "" {
+		err = goa.MergeErrors(err, goa.MissingAttributeError(`response`, "code"))
+	}
+	if mt.Message == "" {
+		err = goa.MergeErrors(err, goa.MissingAttributeError(`response`, "message"))
+	}
+
+	if mt.Data == nil {
+		err = goa.MergeErrors(err, goa.MissingAttributeError(`response`, "data"))
+	}
+	if mt.Data != nil {
+		if err2 := mt.Data.Validate(); err2 != nil {
+			err = goa.MergeErrors(err, err2)
+		}
 	}
 	return
 }
