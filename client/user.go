@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bytes"
 	"fmt"
 	"golang.org/x/net/context"
 	"net/http"
@@ -38,14 +39,19 @@ func (c *Client) NewInfoUserRequest(ctx context.Context, path string) (*http.Req
 	return req, nil
 }
 
+// LoginUserPayload is the user login action payload.
+type LoginUserPayload struct {
+	Email string `form:"email" json:"email" xml:"email"`
+}
+
 // LoginUserPath computes a request path to the login action of user.
 func LoginUserPath() string {
 	return fmt.Sprintf("/user/login")
 }
 
 // This action does not require auth
-func (c *Client) LoginUser(ctx context.Context, path string, email *string, password *string) (*http.Response, error) {
-	req, err := c.NewLoginUserRequest(ctx, path, email, password)
+func (c *Client) LoginUser(ctx context.Context, path string, payload *LoginUserPayload, contentType string) (*http.Response, error) {
+	req, err := c.NewLoginUserRequest(ctx, path, payload, contentType)
 	if err != nil {
 		return nil, err
 	}
@@ -53,23 +59,27 @@ func (c *Client) LoginUser(ctx context.Context, path string, email *string, pass
 }
 
 // NewLoginUserRequest create the request corresponding to the login action endpoint of the user resource.
-func (c *Client) NewLoginUserRequest(ctx context.Context, path string, email *string, password *string) (*http.Request, error) {
+func (c *Client) NewLoginUserRequest(ctx context.Context, path string, payload *LoginUserPayload, contentType string) (*http.Request, error) {
+	var body bytes.Buffer
+	if contentType == "" {
+		contentType = "*/*" // Use default encoder
+	}
+	err := c.Encoder.Encode(payload, &body, contentType)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode body: %s", err)
+	}
 	scheme := c.Scheme
 	if scheme == "" {
 		scheme = "http"
 	}
 	u := url.URL{Host: c.Host, Scheme: scheme, Path: path}
-	values := u.Query()
-	if email != nil {
-		values.Set("email", *email)
-	}
-	if password != nil {
-		values.Set("password", *password)
-	}
-	u.RawQuery = values.Encode()
-	req, err := http.NewRequest("POST", u.String(), nil)
+	req, err := http.NewRequest("POST", u.String(), &body)
 	if err != nil {
 		return nil, err
+	}
+	header := req.Header
+	if contentType != "*/*" {
+		header.Set("Content-Type", contentType)
 	}
 	return req, nil
 }

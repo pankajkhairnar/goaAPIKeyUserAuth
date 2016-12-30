@@ -46,12 +46,19 @@ var _ = Resource("user", func() {
 	})
 
 	Action("login", func() {
+
 		Description("This action does not require auth")
 		Routing(POST("/user/login"))
-		Params(func() {
-			Param("email", String, "Email ID of user")
-			Param("password", String, "Password")
+		// Params(func() {
+		// 	Param("email", String, "Email ID of user")
+		// 	Param("password", String, "Password")
+		// })
+
+		Payload(func() {
+			Member("email")
+			Required("email")
 		})
+
 		NoSecurity()
 		Response(OK, UserLoginResponseMedia)
 		Response(Unauthorized)

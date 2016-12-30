@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/goadesign/goa"
 	goaclient "github.com/goadesign/goa/client"
 	uuid "github.com/goadesign/goa/uuid"
@@ -23,10 +24,8 @@ type (
 
 	// LoginUserCommand is the command line data structure for the login action of user
 	LoginUserCommand struct {
-		// Email ID of user
-		Email string
-		// Password
-		Password    string
+		Payload     string
+		ContentType string
 		PrettyPrint bool
 	}
 
@@ -74,7 +73,14 @@ func RegisterCommands(app *cobra.Command, c *client.Client) {
 	sub = &cobra.Command{
 		Use:   `user ["/user/login"]`,
 		Short: `This resource uses an API key to secure its endpoints`,
-		RunE:  func(cmd *cobra.Command, args []string) error { return tmp2.Run(c, args) },
+		Long: `This resource uses an API key to secure its endpoints
+
+Payload example:
+
+{
+   "email": "Eveniet et qui quia."
+}`,
+		RunE: func(cmd *cobra.Command, args []string) error { return tmp2.Run(c, args) },
 	}
 	tmp2.RegisterFlags(sub, c)
 	sub.PersistentFlags().BoolVar(&tmp2.PrettyPrint, "pp", false, "Pretty print response body")
@@ -295,9 +301,16 @@ func (cmd *LoginUserCommand) Run(c *client.Client, args []string) error {
 	} else {
 		path = "/user/login"
 	}
+	var payload client.LoginUserPayload
+	if cmd.Payload != "" {
+		err := json.Unmarshal([]byte(cmd.Payload), &payload)
+		if err != nil {
+			return fmt.Errorf("failed to deserialize payload: %s", err)
+		}
+	}
 	logger := goa.NewLogger(log.New(os.Stderr, "", log.LstdFlags))
 	ctx := goa.WithLogger(context.Background(), logger)
-	resp, err := c.LoginUser(ctx, path, stringFlagVal("email", cmd.Email), stringFlagVal("password", cmd.Password))
+	resp, err := c.LoginUser(ctx, path, &payload, cmd.ContentType)
 	if err != nil {
 		goa.LogError(ctx, "failed", "err", err)
 		return err
@@ -309,10 +322,8 @@ func (cmd *LoginUserCommand) Run(c *client.Client, args []string) error {
 
 // RegisterFlags registers the command flags with the command line.
 func (cmd *LoginUserCommand) RegisterFlags(cc *cobra.Command, c *client.Client) {
-	var email string
-	cc.Flags().StringVar(&cmd.Email, "email", email, `Email ID of user`)
-	var password string
-	cc.Flags().StringVar(&cmd.Password, "password", password, `Password`)
+	cc.Flags().StringVar(&cmd.Payload, "payload", "", "Request body encoded in JSON")
+	cc.Flags().StringVar(&cmd.ContentType, "content", "", "Request content type override, e.g. 'application/x-www-form-urlencoded'")
 }
 
 // Run makes the HTTP request corresponding to the LogoutUserCommand command.

@@ -150,11 +150,11 @@ func InfoUserUnauthorized(t goatest.TInterface, ctx context.Context, service *go
 	return rw
 }
 
-// LoginUserOK runs the method Login of the given controller with the given parameters.
+// LoginUserOK runs the method Login of the given controller with the given parameters and payload.
 // It returns the response writer so it's possible to inspect the response headers and the media type struct written to the response.
 // If ctx is nil then context.Background() is used.
 // If service is nil then a default service is created.
-func LoginUserOK(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.UserController, email *string, password *string) (http.ResponseWriter, *app.Loginresponse) {
+func LoginUserOK(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.UserController, payload *app.LoginUserPayload) (http.ResponseWriter, *app.Loginresponse) {
 	// Setup service
 	var (
 		logBuf bytes.Buffer
@@ -172,34 +172,27 @@ func LoginUserOK(t goatest.TInterface, ctx context.Context, service *goa.Service
 		service.Encoder.Register(newEncoder, "*/*")
 	}
 
+	// Validate payload
+	err := payload.Validate()
+	if err != nil {
+		e, ok := err.(goa.ServiceError)
+		if !ok {
+			panic(err) // bug
+		}
+		t.Errorf("unexpected payload validation error: %+v", e)
+		return nil, nil
+	}
+
 	// Setup request context
 	rw := httptest.NewRecorder()
-	query := url.Values{}
-	if email != nil {
-		sliceVal := []string{*email}
-		query["email"] = sliceVal
-	}
-	if password != nil {
-		sliceVal := []string{*password}
-		query["password"] = sliceVal
-	}
 	u := &url.URL{
-		Path:     fmt.Sprintf("/user/login"),
-		RawQuery: query.Encode(),
+		Path: fmt.Sprintf("/user/login"),
 	}
 	req, err := http.NewRequest("POST", u.String(), nil)
 	if err != nil {
 		panic("invalid test " + err.Error()) // bug
 	}
 	prms := url.Values{}
-	if email != nil {
-		sliceVal := []string{*email}
-		prms["email"] = sliceVal
-	}
-	if password != nil {
-		sliceVal := []string{*password}
-		prms["password"] = sliceVal
-	}
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -208,6 +201,7 @@ func LoginUserOK(t goatest.TInterface, ctx context.Context, service *goa.Service
 	if err != nil {
 		panic("invalid test data " + err.Error()) // bug
 	}
+	loginCtx.Payload = payload
 
 	// Perform action
 	err = ctrl.Login(loginCtx)
@@ -236,11 +230,11 @@ func LoginUserOK(t goatest.TInterface, ctx context.Context, service *goa.Service
 	return rw, mt
 }
 
-// LoginUserUnauthorized runs the method Login of the given controller with the given parameters.
+// LoginUserUnauthorized runs the method Login of the given controller with the given parameters and payload.
 // It returns the response writer so it's possible to inspect the response headers.
 // If ctx is nil then context.Background() is used.
 // If service is nil then a default service is created.
-func LoginUserUnauthorized(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.UserController, email *string, password *string) http.ResponseWriter {
+func LoginUserUnauthorized(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.UserController, payload *app.LoginUserPayload) http.ResponseWriter {
 	// Setup service
 	var (
 		logBuf bytes.Buffer
@@ -258,34 +252,27 @@ func LoginUserUnauthorized(t goatest.TInterface, ctx context.Context, service *g
 		service.Encoder.Register(newEncoder, "*/*")
 	}
 
+	// Validate payload
+	err := payload.Validate()
+	if err != nil {
+		e, ok := err.(goa.ServiceError)
+		if !ok {
+			panic(err) // bug
+		}
+		t.Errorf("unexpected payload validation error: %+v", e)
+		return nil
+	}
+
 	// Setup request context
 	rw := httptest.NewRecorder()
-	query := url.Values{}
-	if email != nil {
-		sliceVal := []string{*email}
-		query["email"] = sliceVal
-	}
-	if password != nil {
-		sliceVal := []string{*password}
-		query["password"] = sliceVal
-	}
 	u := &url.URL{
-		Path:     fmt.Sprintf("/user/login"),
-		RawQuery: query.Encode(),
+		Path: fmt.Sprintf("/user/login"),
 	}
 	req, err := http.NewRequest("POST", u.String(), nil)
 	if err != nil {
 		panic("invalid test " + err.Error()) // bug
 	}
 	prms := url.Values{}
-	if email != nil {
-		sliceVal := []string{*email}
-		prms["email"] = sliceVal
-	}
-	if password != nil {
-		sliceVal := []string{*password}
-		prms["password"] = sliceVal
-	}
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -294,6 +281,7 @@ func LoginUserUnauthorized(t goatest.TInterface, ctx context.Context, service *g
 	if err != nil {
 		panic("invalid test data " + err.Error()) // bug
 	}
+	loginCtx.Payload = payload
 
 	// Perform action
 	err = ctrl.Login(loginCtx)
