@@ -1,7 +1,6 @@
 package client
 
 import (
-	"bytes"
 	"fmt"
 	"golang.org/x/net/context"
 	"net/http"
@@ -39,19 +38,14 @@ func (c *Client) NewInfoUserRequest(ctx context.Context, path string) (*http.Req
 	return req, nil
 }
 
-// LoginUserPayload is the user login action payload.
-type LoginUserPayload struct {
-	Email string `form:"email" json:"email" xml:"email"`
-}
-
 // LoginUserPath computes a request path to the login action of user.
 func LoginUserPath() string {
 	return fmt.Sprintf("/user/login")
 }
 
 // This action does not require auth
-func (c *Client) LoginUser(ctx context.Context, path string, payload *LoginUserPayload, contentType string) (*http.Response, error) {
-	req, err := c.NewLoginUserRequest(ctx, path, payload, contentType)
+func (c *Client) LoginUser(ctx context.Context, path string) (*http.Response, error) {
+	req, err := c.NewLoginUserRequest(ctx, path)
 	if err != nil {
 		return nil, err
 	}
@@ -59,27 +53,15 @@ func (c *Client) LoginUser(ctx context.Context, path string, payload *LoginUserP
 }
 
 // NewLoginUserRequest create the request corresponding to the login action endpoint of the user resource.
-func (c *Client) NewLoginUserRequest(ctx context.Context, path string, payload *LoginUserPayload, contentType string) (*http.Request, error) {
-	var body bytes.Buffer
-	if contentType == "" {
-		contentType = "*/*" // Use default encoder
-	}
-	err := c.Encoder.Encode(payload, &body, contentType)
-	if err != nil {
-		return nil, fmt.Errorf("failed to encode body: %s", err)
-	}
+func (c *Client) NewLoginUserRequest(ctx context.Context, path string) (*http.Request, error) {
 	scheme := c.Scheme
 	if scheme == "" {
 		scheme = "http"
 	}
 	u := url.URL{Host: c.Host, Scheme: scheme, Path: path}
-	req, err := http.NewRequest("POST", u.String(), &body)
+	req, err := http.NewRequest("POST", u.String(), nil)
 	if err != nil {
 		return nil, err
-	}
-	header := req.Header
-	if contentType != "*/*" {
-		header.Set("Content-Type", contentType)
 	}
 	return req, nil
 }

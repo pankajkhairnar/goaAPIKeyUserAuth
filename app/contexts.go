@@ -53,7 +53,6 @@ type LoginUserContext struct {
 	context.Context
 	*goa.ResponseData
 	*goa.RequestData
-	Payload *LoginUserPayload
 }
 
 // NewLoginUserContext parses the incoming request URL and body, performs validations and creates the
@@ -65,41 +64,6 @@ func NewLoginUserContext(ctx context.Context, service *goa.Service) (*LoginUserC
 	req := goa.ContextRequest(ctx)
 	rctx := LoginUserContext{Context: ctx, ResponseData: resp, RequestData: req}
 	return &rctx, err
-}
-
-// loginUserPayload is the user login action payload.
-type loginUserPayload struct {
-	Email *string `form:"email,omitempty" json:"email,omitempty" xml:"email,omitempty"`
-}
-
-// Validate runs the validation rules defined in the design.
-func (payload *loginUserPayload) Validate() (err error) {
-	if payload.Email == nil {
-		err = goa.MergeErrors(err, goa.MissingAttributeError(`raw`, "email"))
-	}
-	return
-}
-
-// Publicize creates LoginUserPayload from loginUserPayload
-func (payload *loginUserPayload) Publicize() *LoginUserPayload {
-	var pub LoginUserPayload
-	if payload.Email != nil {
-		pub.Email = *payload.Email
-	}
-	return &pub
-}
-
-// LoginUserPayload is the user login action payload.
-type LoginUserPayload struct {
-	Email string `form:"email" json:"email" xml:"email"`
-}
-
-// Validate runs the validation rules defined in the design.
-func (payload *LoginUserPayload) Validate() (err error) {
-	if payload.Email == "" {
-		err = goa.MergeErrors(err, goa.MissingAttributeError(`raw`, "email"))
-	}
-	return
 }
 
 // OK sends a HTTP response with status code 200.

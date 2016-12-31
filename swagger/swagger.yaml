@@ -4,17 +4,6 @@ consumes:
 - application/gob
 - application/x-gob
 definitions:
-  LoginUserPayload:
-    example:
-      email: Eveniet et qui quia.
-    properties:
-      email:
-        example: Eveniet et qui quia.
-        type: string
-    required:
-    - email
-    title: LoginUserPayload
-    type: object
   Loginresponse:
     description: After login response (default view)
     example:
@@ -156,12 +145,6 @@ paths:
     post:
       description: This action does not require auth
       operationId: user#login
-      parameters:
-      - in: body
-        name: payload
-        required: true
-        schema:
-          $ref: '#/definitions/LoginUserPayload'
       responses:
         "200":
           description: OK

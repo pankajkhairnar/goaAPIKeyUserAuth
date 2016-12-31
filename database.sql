@@ -13,3 +13,14 @@ CREATE TABLE IF NOT EXISTS `users` (
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `created_at`, `updated_at`, `deleted_at`) VALUES
 (1, 'pankaj', 'pankaj@gmail.com', '5f4dcc3b5aa765d61d8327deb882cf99', '2016-12-27 00:00:00', '2016-12-27 00:00:00', NULL);
+
+
+CREATE TABLE IF NOT EXISTS `sessions` (
+  `api_key` varchar(100) NOT NULL,
+  `user_id` int(10) unsigned NOT NULL,
+  `data` varchar(500) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  UNIQUE KEY `api_key` (`api_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;

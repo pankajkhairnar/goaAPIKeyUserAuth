@@ -19,6 +19,7 @@ var _ = Resource("user", func() {
 	Action("register", func() {
 		Description("This endpoint will be used to register a user")
 		Routing(POST("/user/register"))
+
 		Params(func() {
 			Param("name", String, "Name of user", func() {
 				MinLength(2)
@@ -46,19 +47,8 @@ var _ = Resource("user", func() {
 	})
 
 	Action("login", func() {
-
 		Description("This action does not require auth")
 		Routing(POST("/user/login"))
-		// Params(func() {
-		// 	Param("email", String, "Email ID of user")
-		// 	Param("password", String, "Password")
-		// })
-
-		Payload(func() {
-			Member("email")
-			Required("email")
-		})
-
 		NoSecurity()
 		Response(OK, UserLoginResponseMedia)
 		Response(Unauthorized)

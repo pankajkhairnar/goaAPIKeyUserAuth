@@ -2,8 +2,13 @@ package main
 
 import (
 	"goaAPIKeyUserAuth/app"
-	"log"
 	"net/http"
+
+	"crypto/md5"
+
+	"fmt"
+
+	"encoding/hex"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/goadesign/goa"
@@ -55,7 +60,6 @@ func NewUserController(service *goa.Service) *UserController {
 
 // Info runs the info action.
 func (c *UserController) Info(ctx *app.InfoUserContext) error {
-
 	var user User
 	var userPayload *app.UserPayload
 	res := &app.Userdataresponse{}
@@ -84,18 +88,52 @@ func (c *UserController) Info(ctx *app.InfoUserContext) error {
 	}
 
 	return ctx.OK(res)
+
 }
 
 // Login runs the login action.
 func (c *UserController) Login(ctx *app.LoginUserContext) error {
-	// UserController_Login: start_implement
+	//err := ctx.ParseForm()
+	email := ctx.FormValue("email")
+	password := ctx.FormValue("password")
 
-	// Put your logic here
+	if email == "" || password == "" {
+		res := &app.Loginresponse{
+			Code:      "failure",
+			Message:   "Email and Password should not be blanked",
+			Status:    400,
+			SecretKey: "",
+		}
+		return ctx.OK(res)
+	}
+	var user User
 
-	log.Println("----------------", ctx.Payload.Email)
+	passwordMd5Byte := md5.Sum([]byte(password))
+	md5Password := hex.EncodeToString(passwordMd5Byte[:])
 
-	// UserController_Login: end_implement
-	res := &app.Loginresponse{}
+	if db.Where("email = ?", email).First(&user).RecordNotFound() == true || user.Password != md5Password {
+		res := &app.Loginresponse{
+			Code:      "invalid",
+			Message:   "Invalid Email or Password",
+			Status:    404,
+			SecretKey: "",
+		}
+		return ctx.OK(res)
+	}
+
+	var session Session
+	session.UserID = user.ID
+	session.UserName = user.Name
+	sessionToken := session.Register()
+
+	fmt.Println("----------------", user, "-------", sessionToken)
+
+	res := &app.Loginresponse{
+		Code:      "success",
+		SecretKey: sessionToken,
+		Message:   "",
+		Status:    200,
+	}
 	return ctx.OK(res)
 }
 

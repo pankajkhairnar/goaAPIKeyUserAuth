@@ -150,11 +150,11 @@ func InfoUserUnauthorized(t goatest.TInterface, ctx context.Context, service *go
 	return rw
 }
 
-// LoginUserOK runs the method Login of the given controller with the given parameters and payload.
+// LoginUserOK runs the method Login of the given controller with the given parameters.
 // It returns the response writer so it's possible to inspect the response headers and the media type struct written to the response.
 // If ctx is nil then context.Background() is used.
 // If service is nil then a default service is created.
-func LoginUserOK(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.UserController, payload *app.LoginUserPayload) (http.ResponseWriter, *app.Loginresponse) {
+func LoginUserOK(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.UserController) (http.ResponseWriter, *app.Loginresponse) {
 	// Setup service
 	var (
 		logBuf bytes.Buffer
@@ -170,17 +170,6 @@ func LoginUserOK(t goatest.TInterface, ctx context.Context, service *goa.Service
 		newEncoder := func(io.Writer) goa.Encoder { return respSetter }
 		service.Encoder = goa.NewHTTPEncoder() // Make sure the code ends up using this decoder
 		service.Encoder.Register(newEncoder, "*/*")
-	}
-
-	// Validate payload
-	err := payload.Validate()
-	if err != nil {
-		e, ok := err.(goa.ServiceError)
-		if !ok {
-			panic(err) // bug
-		}
-		t.Errorf("unexpected payload validation error: %+v", e)
-		return nil, nil
 	}
 
 	// Setup request context
@@ -201,7 +190,6 @@ func LoginUserOK(t goatest.TInterface, ctx context.Context, service *goa.Service
 	if err != nil {
 		panic("invalid test data " + err.Error()) // bug
 	}
-	loginCtx.Payload = payload
 
 	// Perform action
 	err = ctrl.Login(loginCtx)
@@ -230,11 +218,11 @@ func LoginUserOK(t goatest.TInterface, ctx context.Context, service *goa.Service
 	return rw, mt
 }
 
-// LoginUserUnauthorized runs the method Login of the given controller with the given parameters and payload.
+// LoginUserUnauthorized runs the method Login of the given controller with the given parameters.
 // It returns the response writer so it's possible to inspect the response headers.
 // If ctx is nil then context.Background() is used.
 // If service is nil then a default service is created.
-func LoginUserUnauthorized(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.UserController, payload *app.LoginUserPayload) http.ResponseWriter {
+func LoginUserUnauthorized(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.UserController) http.ResponseWriter {
 	// Setup service
 	var (
 		logBuf bytes.Buffer
@@ -250,17 +238,6 @@ func LoginUserUnauthorized(t goatest.TInterface, ctx context.Context, service *g
 		newEncoder := func(io.Writer) goa.Encoder { return respSetter }
 		service.Encoder = goa.NewHTTPEncoder() // Make sure the code ends up using this decoder
 		service.Encoder.Register(newEncoder, "*/*")
-	}
-
-	// Validate payload
-	err := payload.Validate()
-	if err != nil {
-		e, ok := err.(goa.ServiceError)
-		if !ok {
-			panic(err) // bug
-		}
-		t.Errorf("unexpected payload validation error: %+v", e)
-		return nil
 	}
 
 	// Setup request context
@@ -281,7 +258,6 @@ func LoginUserUnauthorized(t goatest.TInterface, ctx context.Context, service *g
 	if err != nil {
 		panic("invalid test data " + err.Error()) // bug
 	}
-	loginCtx.Payload = payload
 
 	// Perform action
 	err = ctrl.Login(loginCtx)
