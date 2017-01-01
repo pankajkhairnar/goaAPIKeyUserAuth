@@ -1,8 +1,11 @@
 package main
 
-import "github.com/twinj/uuid"
-import "errors"
-import "time"
+import (
+	"errors"
+	"time"
+
+	"github.com/twinj/uuid"
+)
 
 type Session struct {
 	Key          string
@@ -27,7 +30,7 @@ func (sess *Session) Register() string {
 	return uuidStr
 }
 
-func (sess *Session) Get() error {
+func (sess *Session) Get() bool {
 	if val, ok := sessStore[sess.Key]; ok {
 		sess.UserID = val.UserID
 		sess.UserName = val.UserName
@@ -38,10 +41,10 @@ func (sess *Session) Get() error {
 			UserName:     sess.UserName,
 			LastAccessed: time.Now(),
 		}
-		return nil
+		return true
 	}
 
-	return errors.New("Key not found")
+	return false
 }
 
 func (sess *Session) Save() error {

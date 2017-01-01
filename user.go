@@ -1,14 +1,11 @@
 package main
 
 import (
+	"crypto/md5"
+	"encoding/hex"
+	"fmt"
 	"goaAPIKeyUserAuth/app"
 	"net/http"
-
-	"crypto/md5"
-
-	"fmt"
-
-	"encoding/hex"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/goadesign/goa"
@@ -39,15 +36,17 @@ func NewAPIKeyMiddleware() goa.Middleware {
 	return func(h goa.Handler) goa.Handler {
 		return func(ctx context.Context, rw http.ResponseWriter, req *http.Request) error {
 			// Retrieve and log header specified by scheme
-			key := req.Header.Get(scheme.Name)
+			sessionKey := req.Header.Get(scheme.Name)
+			var sess Session
+			sess.Key = sessionKey
+			result := sess.Get()
 
-			// A real app would do something more interesting here
-			if len(key) == 0 || key == "Bearer" {
+			if result == false {
+				fmt.Println("error ------ ")
 				goa.LogInfo(ctx, "failed api key auth")
 				return ErrUnauthorized("missing auth")
 			}
-			// Proceed.
-			goa.LogInfo(ctx, "auth", "apikey", "key", key, "scheme.Name", scheme.Name)
+			// user is authenticated, api key is valid
 			return h(ctx, rw, req)
 		}
 	}
@@ -63,7 +62,23 @@ func (c *UserController) Info(ctx *app.InfoUserContext) error {
 	var user User
 	var userPayload *app.UserPayload
 	res := &app.Userdataresponse{}
-	userID := 1 //@todo:  Temporary value, take this value from session
+	scheme := app.NewAPIKeySecurity()
+	sessionKey := ctx.Request.Header.Get(scheme.Name)
+
+	var sess Session
+	sess.Key = sessionKey
+	result := sess.Get()
+	if result == false {
+		res = &app.Userdataresponse{
+			Code:    "failure",
+			Status:  404,
+			Message: "Invalid " + sessionKey,
+			Data:    userPayload,
+		}
+		return ctx.OK(res)
+	}
+
+	userID := sess.UserID
 
 	if db.Where("id = ?", userID).First(&user).RecordNotFound() == true {
 		// userPayload = &app.UserPayload{}
@@ -88,7 +103,6 @@ func (c *UserController) Info(ctx *app.InfoUserContext) error {
 	}
 
 	return ctx.OK(res)
-
 }
 
 // Login runs the login action.

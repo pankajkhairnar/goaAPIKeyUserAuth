@@ -4,6 +4,10 @@ user.go.ren
 goaAPIKeyUserAuth
 
 
+.vscode/
+debug
+
+
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 *.o
 *.a

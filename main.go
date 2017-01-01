@@ -27,6 +27,9 @@ func main() {
 	service.Use(middleware.ErrorHandler(service, true))
 	service.Use(middleware.Recover())
 
+	// middleware
+	app.UseAPIKeyMiddleware(service, NewAPIKeyMiddleware())
+
 	// Mount "user" controller
 	c := NewUserController(service)
 	app.MountUserController(service, c)
