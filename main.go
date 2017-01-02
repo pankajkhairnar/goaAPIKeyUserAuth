@@ -34,9 +34,23 @@ func main() {
 	c := NewUserController(service)
 	app.MountUserController(service, c)
 
-	db, _ = gorm.Open("mysql", "root:password@/goaAPIKeyUserAuth")
+	db, _ = gorm.Open("mysql", "root:password@/database")
+	LoadSession()
 	// Start service
-	if err := service.ListenAndServe(":8080"); err != nil {
+	if err := service.ListenAndServe(":9001"); err != nil {
 		service.LogError("startup", "err", err)
+	}
+}
+func LoadSession() {
+	session := []Session{}
+	if db.Find(&session).RecordNotFound() != true {
+		for _, row := range session {
+			sessStore[row.Key] = Session{
+				Key:          row.Key,
+				UserID:       row.UserID,
+				UserName:     row.UserName,
+				LastAccessed: row.LastAccessed,
+			}
+		}
 	}
 }

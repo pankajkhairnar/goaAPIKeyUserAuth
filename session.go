@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"time"
 
 	"github.com/twinj/uuid"
@@ -12,15 +11,16 @@ type Session struct {
 	UserID       uint
 	UserName     string
 	LastAccessed time.Time
+	//	DeletedAt    time.Time
 }
 
 var sessStore = make(map[string]Session)
 
 // Register : method will create new session id and store session values in map, it will return session tokey
 func (sess *Session) Register() string {
-	uuidStr := uuid.NewV4().String()
+	//uuidStr := uuid.NewV4().String()
 	// uuidStr1 := uuid.UnmarshalText(uuidStr)
-
+	uuidStr := sess.Save()
 	sessStore[uuidStr] = Session{
 		Key:          uuidStr,
 		UserID:       sess.UserID,
@@ -47,25 +47,23 @@ func (sess *Session) Get() bool {
 	return false
 }
 
-func (sess *Session) Save() error {
-	if sess.Key == "" {
-		return errors.New("Session is not registered")
-	}
-
-	sessStore[sess.Key] = Session{
+func (sess *Session) Save() string {
+	sess.Key = uuid.NewV4().String()
+	session := Session{
 		Key:          sess.Key,
 		UserID:       sess.UserID,
 		UserName:     sess.UserName,
 		LastAccessed: time.Now(),
 	}
-	return nil
+	db.Create(&session)
+	return sess.Key
 }
 
 //Destroy : method will destroy session
-func (sess *Session) Destroy() error {
+func (sess *Session) Destroy() bool {
 	if sess.Key == "" {
-		return errors.New("Session is not registered")
+		return false
 	}
 	delete(sessStore, sess.Key)
-	return nil
+	return true
 }

@@ -158,8 +158,22 @@ func (c *UserController) Logout(ctx *app.LogoutUserContext) error {
 	// Put your logic here
 
 	// UserController_Logout: end_implement
-	res := &app.Usercommonresponse{}
-	return ctx.OK(res)
+	//res := &app.Usercommonresponse{}
+	//return ctx.OK([]byte("res"))
+	scheme := app.NewAPIKeySecurity()
+	sessionKey := ctx.Request.Header.Get(scheme.Name)
+	var session Session
+	id := sessStore[sessionKey].UserID
+	db.Where("user_id = ?", id).Delete(&Session{})
+	if session.Destroy() == true {
+		res := &app.Usercommonresponse{
+			Code:    "success",
+			Message: "Loggedout successfully",
+			Status:  200,
+		}
+		return ctx.OK(res)
+	}
+	return nil
 }
 
 // Register runs the register action.
@@ -169,6 +183,31 @@ func (c *UserController) Register(ctx *app.RegisterUserContext) error {
 	// Put your logic here
 
 	// UserController_Register: end_implement
-	res := &app.Usercommonresponse{}
+
+	name := ctx.FormValue("name")
+	email := ctx.FormValue("email")
+	password := ctx.FormValue("password")
+	re_password := ctx.FormValue("re_password")
+	passwordMd5Byte := md5.Sum([]byte(password))
+	md5Password := hex.EncodeToString(passwordMd5Byte[:])
+	if password != re_password {
+		res := &app.Usercommonresponse{
+			Code:    "invalid",
+			Message: "Re_password and password doesn't match",
+			Status:  404,
+		}
+		return ctx.OK(res)
+	}
+	user := User{
+		Name:     name,
+		Email:    email,
+		Password: md5Password,
+	}
+	db.Create(&user)
+	res := &app.Usercommonresponse{
+		Code:    "success",
+		Message: "Registered successfully",
+		Status:  200,
+	}
 	return ctx.OK(res)
 }
