@@ -7,26 +7,26 @@ definitions:
   Loginresponse:
     description: After login response (default view)
     example:
-      code: Autem omnis est ex sed recusandae.
-      message: Eos consequatur.
-      secret_key: Deleniti sed.
-      status: 3.4631598e+18
+      code: Mollitia sequi.
+      message: Consequatur quisquam omnis magnam.
+      secret_key: Cupiditate ut deleniti ea ratione eum recusandae.
+      status: 8.2882973e+18
     properties:
       code:
         description: Response code
-        example: Autem omnis est ex sed recusandae.
+        example: Mollitia sequi.
         type: string
       message:
         description: Response Message
-        example: Eos consequatur.
+        example: Consequatur quisquam omnis magnam.
         type: string
       secret_key:
         description: Secret key
-        example: Deleniti sed.
+        example: Cupiditate ut deleniti ea ratione eum recusandae.
         type: string
       status:
         description: Error Code
-        example: 3.4631598e+18
+        example: 8.2882973e+18
         format: int64
         type: integer
     required:
@@ -34,27 +34,27 @@ definitions:
     - message
     - status
     - secret_key
-    title: 'Mediatype identifier: application/vnd.loginresponse'
+    title: 'Mediatype identifier: application/vnd.loginresponse; view=default'
     type: object
   UserPayload:
     description: User data payload
     example:
-      UserEmail: Alias quia est minima vel possimus.
-      UserId: 5.4907137e+18
-      UserName: Neque delectus.
+      UserEmail: Id dolorem mollitia vitae aut.
+      UserId: 7.453676e+18
+      UserName: Reiciendis sed molestiae aut quia.
     properties:
       UserEmail:
         description: User Email
-        example: Alias quia est minima vel possimus.
+        example: Id dolorem mollitia vitae aut.
         type: string
       UserId:
         description: User Id
-        example: 5.4907137e+18
+        example: 7.453676e+18
         format: int64
         type: integer
       UserName:
         description: User Name
-        example: Neque delectus.
+        example: Reiciendis sed molestiae aut quia.
         type: string
     required:
     - UserId
@@ -66,53 +66,53 @@ definitions:
     description: This will be a common response for most the user end points (default
       view)
     example:
-      code: Ex velit amet eius tempora iusto.
-      message: Occaecati numquam velit et explicabo id.
-      status: 4.0464612e+18
+      code: Hic mollitia porro omnis nostrum perspiciatis atque.
+      message: Distinctio consequuntur.
+      status: 7.2622083e+18
     properties:
       code:
         description: Response code
-        example: Ex velit amet eius tempora iusto.
+        example: Hic mollitia porro omnis nostrum perspiciatis atque.
         type: string
       message:
         description: Response Message
-        example: Occaecati numquam velit et explicabo id.
+        example: Distinctio consequuntur.
         type: string
       status:
         description: Error Code
-        example: 4.0464612e+18
+        example: 7.2622083e+18
         format: int64
         type: integer
     required:
     - code
     - message
     - status
-    title: 'Mediatype identifier: application/vnd.usercommonresponse'
+    title: 'Mediatype identifier: application/vnd.usercommonresponse; view=default'
     type: object
   Userdataresponse:
     description: This will be response when user/info endpoint called (default view)
     example:
-      code: Dignissimos corrupti similique voluptatibus.
+      code: Repellat commodi voluptas sed numquam.
       data:
-        UserEmail: Alias quia est minima vel possimus.
-        UserId: 5.4907137e+18
-        UserName: Neque delectus.
-      message: Libero nesciunt veniam reiciendis aut dolore ipsum.
-      status: 7.787198e+18
+        UserEmail: Id dolorem mollitia vitae aut.
+        UserId: 7.453676e+18
+        UserName: Reiciendis sed molestiae aut quia.
+      message: Fugit a doloremque provident.
+      status: 2.2904754e+18
     properties:
       code:
         description: Response code
-        example: Dignissimos corrupti similique voluptatibus.
+        example: Repellat commodi voluptas sed numquam.
         type: string
       data:
         $ref: '#/definitions/UserPayload'
       message:
         description: Response Message
-        example: Libero nesciunt veniam reiciendis aut dolore ipsum.
+        example: Fugit a doloremque provident.
         type: string
       status:
         description: Error Code
-        example: 7.787198e+18
+        example: 2.2904754e+18
         format: int64
         type: integer
     required:
@@ -120,9 +120,10 @@ definitions:
     - message
     - status
     - data
-    title: 'Mediatype identifier: application/vnd.userdataresponse'
+    title: 'Mediatype identifier: application/vnd.userdataresponse; view=default'
     type: object
 info:
+  title: goaAPIKeyUserAuth
   version: ""
 paths:
   /user/info:
@@ -175,36 +176,6 @@ paths:
     post:
       description: This endpoint will be used to register a user
       operationId: user#register
-      parameters:
-      - description: Email of user
-        in: query
-        maxLength: 50
-        minLength: 5
-        name: email
-        required: false
-        type: string
-      - description: Name of user
-        in: query
-        maxLength: 50
-        minLength: 2
-        name: name
-        pattern: ^[ a-zA-Z]+$
-        required: false
-        type: string
-      - description: Password
-        in: query
-        maxLength: 20
-        minLength: 5
-        name: password
-        required: false
-        type: string
-      - description: Password
-        in: query
-        maxLength: 20
-        minLength: 5
-        name: re_password
-        required: false
-        type: string
       responses:
         "200":
           description: OK
@@ -219,10 +190,6 @@ produces:
 - application/gob
 - application/x-gob
 responses:
-  OK:
-    description: OK
-    schema:
-      $ref: '#/definitions/Usercommonresponse'
   Unauthorized:
     description: Unauthorized
 securityDefinitions:

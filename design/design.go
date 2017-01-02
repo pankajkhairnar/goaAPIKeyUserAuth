@@ -11,16 +11,19 @@ var APIKey = APIKeySecurity("api_key", func() {
 	Header("secret-key")
 })
 
+var _ = API("goaAPIKeyUserAuth", func() {
+	Title("goaAPIKeyUserAuth")
+})
+
 var _ = Resource("user", func() {
 	Description("This resource uses an API key to secure its endpoints")
-	DefaultMedia(UserCommonResponseMedia)
+	DefaultMedia(RegisterUser)
 	Security(APIKey)
 
 	Action("register", func() {
 		Description("This endpoint will be used to register a user")
 		Routing(POST("/user/register"))
-
-		Params(func() {
+		/*	Params(func() {
 			Param("name", String, "Name of user", func() {
 				MinLength(2)
 				MaxLength(50)
@@ -41,7 +44,7 @@ var _ = Resource("user", func() {
 				MinLength(5)
 				MaxLength(20)
 			})
-		})
+		})*/
 		NoSecurity()
 		Response(OK, UserCommonResponseMedia)
 	})
@@ -64,7 +67,7 @@ var _ = Resource("user", func() {
 	Action("logout", func() {
 		Description("This action is secure with the api_key scheme")
 		Routing(GET("/user/logout"))
-		Response(OK)
+		Response(OK, UserCommonResponseMedia)
 		Response(Unauthorized)
 	})
 })
@@ -130,5 +133,23 @@ var UserCommonResponseMedia = MediaType("application/vnd.userCommonResponse", fu
 		Attribute("code")
 		Attribute("message")
 		Attribute("status")
+	})
+})
+
+var RegisterUser = MediaType("application/vnd.registerUser", func() {
+	Description("This will be a common response for most the user end points")
+	Attributes(func() {
+		Attribute("name", String, "Input name")
+		Attribute("email", String, "Input email")
+		Attribute("password", String, "Input password")
+		Attribute("re_password", String, "Re-enter password")
+		Required("name", "email", "password", "re_password")
+	})
+
+	View("default", func() {
+		Attribute("name")
+		Attribute("email")
+		Attribute("password")
+		Attribute("re_password")
 	})
 })
