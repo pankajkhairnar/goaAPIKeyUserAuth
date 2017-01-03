@@ -153,18 +153,10 @@ func (c *UserController) Login(ctx *app.LoginUserContext) error {
 
 // Logout runs the logout action.
 func (c *UserController) Logout(ctx *app.LogoutUserContext) error {
-	// UserController_Logout: start_implement
-
-	// Put your logic here
-
-	// UserController_Logout: end_implement
-	//res := &app.Usercommonresponse{}
-	//return ctx.OK([]byte("res"))
 	scheme := app.NewAPIKeySecurity()
 	sessionKey := ctx.Request.Header.Get(scheme.Name)
 	var session Session
-	id := sessStore[sessionKey].UserID
-	db.Where("user_id = ?", id).Delete(&Session{})
+	session.Key = sessionKey
 	if session.Destroy() == true {
 		res := &app.Usercommonresponse{
 			Code:    "success",
@@ -178,11 +170,6 @@ func (c *UserController) Logout(ctx *app.LogoutUserContext) error {
 
 // Register runs the register action.
 func (c *UserController) Register(ctx *app.RegisterUserContext) error {
-	// UserController_Register: start_implement
-
-	// Put your logic here
-
-	// UserController_Register: end_implement
 
 	name := ctx.FormValue("name")
 	email := ctx.FormValue("email")
